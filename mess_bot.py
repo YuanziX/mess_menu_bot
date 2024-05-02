@@ -1,6 +1,6 @@
 import json
 import os
-import priv_constants
+from priv_constants import TOKEN
 from telegram import Update
 from telegram.ext import (
     Application,
@@ -19,13 +19,18 @@ def read_config():
     except FileNotFoundError:
         return ''
 
-MESS_MENU_LOCATION = read_config()
-MESS_MENU = clean_mess_menu(MESS_MENU_LOCATION) if MESS_MENU_LOCATION else None
-
 def save_config(mess_menu_location):
     config_data = {'mess_menu_location': mess_menu_location}
     with open('mess_constants.json', 'w') as file:
         json.dump(config_data, file, indent=4)
+
+MESS_MENU_LOCATION = read_config()
+try:
+    MESS_MENU = clean_mess_menu(MESS_MENU_LOCATION)
+except:
+    MESS_MENU = None
+    MESS_MENU_LOCATION = ''
+    save_config('')
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     """Send a message when the command /start is issued."""
