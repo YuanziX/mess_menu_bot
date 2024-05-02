@@ -83,7 +83,7 @@ def main() -> None:
     application.add_handler(CommandHandler("next", next))
     application.add_handler(CommandHandler("next_four", next_four))
 
-    application.add_handler(MessageHandler(filters.TEXT & ~filters.REPLY & ~filters.COMMAND, use_next))
+    application.add_handler(MessageHandler(filters.TEXT & ~filters.CHAT & ~filters.REPLY & ~filters.COMMAND, use_next))
     application.add_handler(MessageHandler(filters.Document.FileExtension("xlsx"), handle_file))
 
     application.run_polling(allowed_updates=Update.ALL_TYPES)
