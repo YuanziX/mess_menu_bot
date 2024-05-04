@@ -66,7 +66,7 @@ def clean_mess_menu(file_location: str) -> pd.DataFrame:
 
 
 def get_meal(mess_menu: pd.DataFrame, date: int, meal_index: int):
-    return mess_menu.loc[:, date].iloc[meal_index]
+    return f"{mess_menu.loc[:, date].index[meal_index]}: {mess_menu.loc[:, date].iloc[meal_index]}"
 
 
 def next_n_meals(mess_menu: pd.DataFrame, n: int):
@@ -95,8 +95,8 @@ def next_n_meals(mess_menu: pd.DataFrame, n: int):
 
 
 def next_meal(mess_menu: pd.DataFrame):
-    next_n_meals(mess_menu, 1)
+    return next_n_meals(mess_menu, 1)
 
 
-def next_four_meal(mess_menu: pd.DataFrame):
-    next_n_meals(mess_menu, 4)
+def next_four_meals(mess_menu: pd.DataFrame):
+    return next_n_meals(mess_menu, 4)
