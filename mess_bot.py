@@ -9,7 +9,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-from mess import clean_mess_menu, next_meal, next_four_meals
+from mess import clean_mess_menu, next_n_meals
 
 
 def read_config():
@@ -44,18 +44,34 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     )
 
 
-async def next(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def send_meals(
+    update: Update, context: ContextTypes.DEFAULT_TYPE, num_meals: int
+) -> None:
     if not (MESS_MENU is None or MESS_MENU.empty):
-        await update.message.reply_text("\n".join(next_meal(MESS_MENU)))
+        await update.message.reply_text("\n".join(next_n_meals(MESS_MENU, num_meals)))
     else:
         await update.message.reply_text("Mess menu is not available.")
+
+
+async def next(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await send_meals(update, context, 1)
 
 
 async def next_four(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    if not (MESS_MENU is None or MESS_MENU.empty):
-        await update.message.reply_text("\n".join(next_four_meals(MESS_MENU)))
-    else:
-        await update.message.reply_text("Mess menu is not available.")
+    await send_meals(update, context, 4)
+
+
+async def next_n(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    try:
+        num_meals = int(context.args[0])
+    except IndexError:
+        await update.message.reply_text("Please specify the number of meals.")
+        return
+    except ValueError:
+        await update.message.reply_text("Invalid number of meals.")
+        return
+
+    await send_meals(update, context, num_meals)
 
 
 async def use_next(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -96,7 +112,8 @@ def main() -> None:
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", use_next))
     application.add_handler(CommandHandler("next", next))
-    application.add_handler(CommandHandler("next_four", next_four))
+    application.add_handler(CommandHandler("next4", next_four))
+    application.add_handler(CommandHandler("nextn", next_n))
 
     application.add_handler(
         MessageHandler(
