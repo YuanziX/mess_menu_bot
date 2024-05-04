@@ -92,11 +92,3 @@ def next_n_meals(mess_menu: pd.DataFrame, n: int):
         meals.append(get_meal(mess_menu, dt[1], meal_index))
 
     return meals
-
-
-def next_meal(mess_menu: pd.DataFrame):
-    return next_n_meals(mess_menu, 1)
-
-
-def next_four_meals(mess_menu: pd.DataFrame):
-    return next_n_meals(mess_menu, 4)
