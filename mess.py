@@ -67,7 +67,20 @@ def clean_mess_menu(file_location: str) -> pd.DataFrame:
     clean_menu = clean_menu[
         ["DAYS", "DATES", "BREAKFAST", "LUNCH", "SNACKS", "DINNER"]
     ]
-    return clean_menu
+
+    new_mess_menu = pd.DataFrame()
+
+    for ind, row in clean_menu.iterrows():
+        try:
+            for i in row['DATES'].split(','):
+                new_mess_menu[int(i.strip())] = row
+        except:
+            try:
+                new_mess_menu[int(row['DATES'])] = row
+            except:
+                pass
+
+    return new_mess_menu
 
 
 def next_meal(mess_menu: pd.DataFrame):
