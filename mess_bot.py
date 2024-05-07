@@ -72,7 +72,7 @@ async def next_n(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 async def use_next(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
-        "Use /next to get the next meal.\nUse /next_four to get the next four meals."
+        "Use /next [optional n: int] to get the next [n] meal.\nUse /next4 to get the next four meals."
     )
 
 
@@ -109,7 +109,6 @@ def main() -> None:
     application.add_handler(CommandHandler("help", use_next))
     application.add_handler(CommandHandler("next", next_n))
     application.add_handler(CommandHandler("next4", next_four))
-    application.add_handler(CommandHandler("nextn", next_n))
 
     application.add_handler(
         MessageHandler(
