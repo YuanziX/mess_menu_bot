@@ -70,6 +70,14 @@ async def next_n(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await send_meals(update, context, num_meals)
 
 
+async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    try:
+        doc_file = open(MESS_MENU_LOCATION, "rb")
+        return await context.bot.send_document(update.effective_chat.id, doc_file)
+    except FileNotFoundError:
+        await update.message.reply_text("Mess menu is not available.")
+
+
 async def use_next(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(
         "Use /next [optional n: int] to get the next [n] meal.\nUse /next4 to get the next four meals."
@@ -109,6 +117,7 @@ def main() -> None:
     application.add_handler(CommandHandler("help", use_next))
     application.add_handler(CommandHandler("next", next_n))
     application.add_handler(CommandHandler("next4", next_four))
+    application.add_handler(CommandHandler("menu", menu))
 
     application.add_handler(
         MessageHandler(
