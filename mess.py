@@ -16,7 +16,7 @@ dayOfTheWeek = {
 
 
 def last_day_of_month(any_day):
-    next_month = any_day.replace(day=28) + datetime.timedelta(days=4)
+    next_month = any_day.replace(day=28) + timedelta(days=4)
     return next_month - timedelta(days=next_month.day)
 
 
@@ -26,7 +26,7 @@ def _getTimeWeekDayDateLastDate():
         dt.time().hour * 100 + dt.time().minute,
         dt.date().weekday(),
         dt.date().day,
-        datetime.date(dt).day,
+        last_day_of_month(dt).day,
     )
 
 
