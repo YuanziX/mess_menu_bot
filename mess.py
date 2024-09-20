@@ -77,57 +77,34 @@ def clean_mess_menu(file_location: str) -> pd.DataFrame:
     return clean_menu
 
 
-def get_meal(mess_menu: pd.DataFrame, date: int, day: str, meal_type: str):
-    meal_items = mess_menu.loc[day, meal_type]
+def get_meals(mess_menu: pd.DataFrame, day: str, date: int):
+    """
+    Get the meals for a particular day.
 
-    parts = re.split(r"(\d\))", meal_items)
+    Args:
+        mess_menu: Cleaned mess menu.
+        day: Day for which the meals are to be fetched.
 
-    formatted_items = ""
-    i = 1
-    while i < len(parts):
-        number = parts[i].strip() if i < len(parts) else ""
-        item = parts[i + 1].strip() if (i + 1) < len(parts) else ""
+    Returns:
+        dict: Meals for the given day.
+    """
+    meals = mess_menu.loc[day]
+    meals = meals.to_list()
 
-        if item:
-            formatted_items += f"{' ' * 8}{number} {item}\n"
+    for index, meal in enumerate(meals):
+        meals[index] = f"```{capitalize(time_slot[list(time_slot)[index]])}\n{meal}```"
 
-        i += 2
-
-    if not re.search(r"\d\)", meal_items):
-        formatted_items = f"{' ' * 8}{meal_items.strip()}"
-
-    return f"{date} - {capitalize(day)}: {capitalize(meal_type)}\n{formatted_items}"
+    return f"*{date} - {day}*\n\n" + "\n\n".join(meals)
 
 
-def next_n_meals(mess_menu: pd.DataFrame, n: int):
+def nday_meals(mess_menu: pd.DataFrame, nday: int):
+    time, week_day, date, last_day = _getTimeWeekDayDateLastDate()
+    if time > 2100:
+        week_day = (week_day + 1) % 7
+
     meals = []
-    current_time, current_day, current_date, last_date = _getTimeWeekDayDateLastDate()
-    day_count = 0
-
-    while len(meals) < n:
-        if current_date > last_date:
-            break
-
-        day_index = (current_day + day_count) % 7
-        day = dayOfTheWeek[day_index]
-
-        if day_count == 0:
-            start_meal = _getMealType(current_time)
-        else:
-            start_meal = None
-
-        meal_started = start_meal is None
-        for _, meal_type in time_slot.items():
-            if not meal_started and meal_type == start_meal:
-                meal_started = True
-
-            if meal_started:
-                meal = get_meal(mess_menu, current_date + day_count, day, meal_type)
-                meals.append(meal)
-
-                if len(meals) == n:
-                    return meals
-        meals[-1] = meals[-1] + "\n"
-        day_count += 1
+    for _ in range(nday):
+        meals.append(get_meals(mess_menu, dayOfTheWeek[week_day], date))
+        week_day = (week_day + 1) % 7
 
     return meals
