@@ -30,12 +30,11 @@ def _getTimeWeekDayDateLastDate():
     )
 
 
-def _getMealType(time):
-    for key in time_slot.keys():
+def _getNextMeal(time):
+    for key in sorted(time_slot.keys()):
         if time < key:
-            return time_slot[key]
-
-    return None
+            return key, time_slot[key]
+    return 900, time_slot[900]  # Return breakfast if after 2100
 
 
 def capitalize(string):
@@ -53,6 +52,40 @@ def _capitalize_array(string: list) -> str:
 
 def _capitalize_string(string: str) -> str:
     return string[0].upper() + string[1:].lower()
+
+
+def get_meal(mess_menu: pd.DataFrame, day: str, date: int, meal_time: int, meal_name: str):
+    meals = mess_menu.loc[day]
+    meal_index = list(time_slot.values()).index(meal_name)
+    meal = meals.iloc[meal_index]
+    return f"```{capitalize(meal_name)}\n{meal}```"
+
+
+def next_n_meals(mess_menu: pd.DataFrame, n: int):
+    time, week_day, date, last_day = _getTimeWeekDayDateLastDate()
+    next_meal_time, next_meal_name = _getNextMeal(time)
+    
+    meals = []
+    current_day = None
+    for _ in range(n):
+        day = dayOfTheWeek[week_day]
+        if day != current_day:
+            meals.append(f"\n*{date} - {day}*")
+            current_day = day
+        
+        meals.append(get_meal(mess_menu, day, date, next_meal_time, next_meal_name))
+        
+        # Move to the next meal
+        time = next_meal_time
+        next_meal_time, next_meal_name = _getNextMeal(time + 1)
+        
+        # Check if we've reached the end of the day
+        if next_meal_time == 900:  # This means we're moving to breakfast of the next day
+            week_day = (week_day + 1) % 7
+            date = (date % last_day) + 1
+            current_day = None  # Reset current_day to print the new day
+    
+    return "\n".join(meals)
 
 
 def clean_mess_menu(file_location: str) -> pd.DataFrame:
@@ -77,34 +110,5 @@ def clean_mess_menu(file_location: str) -> pd.DataFrame:
     return clean_menu
 
 
-def get_meals(mess_menu: pd.DataFrame, day: str, date: int):
-    """
-    Get the meals for a particular day.
-
-    Args:
-        mess_menu: Cleaned mess menu.
-        day: Day for which the meals are to be fetched.
-
-    Returns:
-        dict: Meals for the given day.
-    """
-    meals = mess_menu.loc[day]
-    meals = meals.to_list()
-
-    for index, meal in enumerate(meals):
-        meals[index] = f"```{capitalize(time_slot[list(time_slot)[index]])}\n{meal}```"
-
-    return f"*{date} - {day}*\n\n" + "\n\n".join(meals)
-
-
-def nday_meals(mess_menu: pd.DataFrame, nday: int):
-    time, week_day, date, last_day = _getTimeWeekDayDateLastDate()
-    if time > 2100:
-        week_day = (week_day + 1) % 7
-
-    meals = []
-    for _ in range(nday):
-        meals.append(get_meals(mess_menu, dayOfTheWeek[week_day], date))
-        week_day = (week_day + 1) % 7
-
-    return meals
+if __name__ == "__main__":
+    print(next_n_meals(clean_mess_menu("mess_menus\\FINAL_VEG_NONVEG_SEPTEMBER_MENU.xlsx"), 5))

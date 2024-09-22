@@ -9,7 +9,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-from mess import clean_mess_menu, nday_meals
+from mess import clean_mess_menu, next_n_meals
 
 
 def read_config():
@@ -48,24 +48,23 @@ async def send_meals(
     update: Update, context: ContextTypes.DEFAULT_TYPE, num_meals: int
 ) -> None:
     if not (MESS_MENU is None or MESS_MENU.empty):
-        await update.message.reply_text(
-            "\n\n".join(nday_meals(MESS_MENU, num_meals)), parse_mode="Markdown"
-        )
+        meals = next_n_meals(MESS_MENU, num_meals)
+        await update.message.reply_text(meals, parse_mode="Markdown")
     else:
         await update.message.reply_text("Mess menu is not available.")
 
 
-async def ndays(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def next_n_meals_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     try:
-        num_meals = int(context.args[0])
-    except IndexError:
-        await send_meals(update, context, 1)
-        return
+        num_meals = int(context.args[0]) if context.args else 1
     except ValueError:
         await update.message.reply_text("Invalid number of meals.")
         return
 
     await send_meals(update, context, num_meals)
+
+async def next_4_meals_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await send_meals(update, context, 4)
 
 
 async def menu(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -113,8 +112,8 @@ def main() -> None:
 
     application.add_handler(CommandHandler("start", start))
     application.add_handler(CommandHandler("help", use_next))
-    application.add_handler(CommandHandler("day", ndays))
-    application.add_handler(CommandHandler("day", ndays))
+    application.add_handler(CommandHandler("next", next_n_meals_command))
+    application.add_handler(CommandHandler("next4", next_4_meals_command))
     application.add_handler(CommandHandler("menu", menu))
 
     application.add_handler(
